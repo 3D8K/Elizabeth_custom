@@ -1,0 +1,128 @@
+<div class="relative bg-white lg:flex hidden" x-data="{ openMenu: false, toggleMenu() { this.openMenu = ! this.openMenu } }">
+  <div class="mx-auto px-4 sm:px-6 w-full">
+    <div class="flex justify-between items-center py-6 md:justify-start md:space-x-10">
+      <!-- STORE NAME / STORE LOGO -->
+      <div class="flex justify-start lg:flex-1 truncate">
+        <h1 class="text-xl font-bold truncate z-20">{{ shop.name }}</h1>
+      </div>
+      <!-- HAMBURGER MENU -->
+      <button class="flex md:hidden z-20" @click="toggleMenu()">
+        <div x-show="openMenu">
+          {% render 'icon-cross' %}
+        </div>
+        <div x-show="! openMenu">{% render 'icon-mobile-menu' %}</div>
+      </button>
+      <!-- NAVIGATION MENU -->
+      <div class="hidden md:flex space-x-10">
+        {% for link in section.settings.menu.links %}
+          {% if link.links != blank %}
+            <div class="relative group">
+              <button type="button" class="inline-flex items-center  text-gray-500 hover:text-gray-900">
+                {{ link.title }}
+                {% render 'icon-dropdown' %}
+              </button>
+              <div class="lg:absolute lg:-bottom-13 min-w-full bg-white shadow-md group-hover:flex hidden p-3 rounded-md flex-col">
+                {% for link in link.links %}
+                  <a href="{{ link.url }}" class="text-gray-500 hover:text-gray-900 w-full hover:bg-slate-100 flex px-1 py-0.5 transition-all duration-75 rounded-md whitespace-nowrap">{{ link.title }}</a>
+                {% endfor %}
+              </div>
+            </div>
+          {% else %}
+            <a href="{{ link.url }}" class="text-base text-gray-500 hover:text-gray-900">{{ link.title }}</a>
+          {% endif %}
+
+        {% endfor %}
+      </div>
+      <!-- CART BUTTON / ACCOUNT LINKS IF ENABLED -->
+      <div class="hidden md:flex items-center justify-end md:flex-1 space-x-5">
+        <a href="/cart" class="whitespace-nowrap text-base text-gray-500 hover:text-gray-900">
+          {% render 'icon-shoping_cart' %}
+        </a>
+
+        {% if shop.customer_accounts_enabled %}
+          {% if customer %}
+            <a href="/account" class="text-base text-gray-500 hover:text-gray-900">account</a>
+            Log out
+          {% else %}
+            {{ 'Log in ' | customer_login_link | replace: '<a', '<a class="text-base text-gray-500 hover:text-gray-900"' }}
+            {{ 'Register' | customer_register_link | replace: '<a', '<a class="text-base text-gray-500 hover:text-gray-900"' }}
+          {% endif %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+<div
+  class="relative shadow-lg flex flex-col lg:hidden mx-2 mt-2 rounded-md"
+  x-data="{ openMenuMob: false, toggleMenuMob() { this.openMenuMob = ! this.openMenuMob } }"
+  x-on:resize.window="
+                            width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+                            if (width > 1024) {
+                             openMenuMob = false
+                            }
+                            "><div class="mx-auto px-4 sm:px-6 w-full">
+    <div class="flex justify-between items-center py-6 lg:justify-start lg:space-x-10">
+      <!-- STORE NAME / STORE LOGO -->
+      <div class="flex justify-start lg:flex-1 truncate">
+        <h1 class="text-xl font-bold truncate z-20">{{ shop.name }}</h1>
+      </div>
+      <!-- HAMBURGER MENU -->
+      <button class="flex lg:hidden z-20" @click="toggleMenuMob()">
+        <div x-show="openMenuMob">
+          {% render 'icon-cross' %}
+        </div>
+        <div x-show="! openMenuMob">
+          {% render 'icon-mobile-menu' %}
+        </div>
+      </button>
+    </div>
+  </div>
+  <div class="mx-3 bg-black h-px opacity-5" x-show="openMenuMob"></div>
+  <!-- SIDEBAR MENU -->
+  <div x-show="openMenuMob" class="flex w-full h-full items-start p-3 justify-center flex-col gap-1 animate-fadeIn">
+    {% for link in section.settings.menu.links %}
+      {% if link.links != blank %}
+        <div
+          class="relative group rounded-md  px-2 py-1 w-full"
+          x-data="{ open{{ link.title }}: false, toggle{{ link.title }}() { this.open{{ link.title }} = ! this.open{{ link.title }} } }"
+          x-on:close-all=" open{{link.title}} = open{{link.title}}">
+          <button
+            type="button"
+            class="inline-flex items-center justify-between uppercase text-base w-full"
+            @click="toggle{{ link.title }}()">
+            {{ link.title }}
+            <div class="transition-all duration-75" x-bind:class="open{{ link.title }} ? 'rotate-180' : ''">
+              {% render 'icon-dropdown' %}
+            </div>
+          </button>
+          <div class="min-w-full p-3 flex-col animate-fadeIn" x-show="open{{ link.title }} ">
+            {% for link in link.links %}
+              <a href="{{ link.url }}" class="text-blak w-full uppercase flex px-1 py-0.5 transition-all duration-75 rounded-md whitespace-nowrap">{{ link.title }}</a>
+            {% endfor %}
+          </div>
+        </div>
+      {% else %}
+        <a href="{{ link.url }}" class="text-base text-black uppercase w-full rounded-md  px-2 py-1">{{ link.title }}</a>
+      {% endif %}
+    {% endfor %}
+  </div>
+</div>
+
+{% schema %}
+  {
+    "name": "Header",
+    "settings": [
+      {
+        "type": "text",
+        "id": "mobile_menu_title",
+        "default": "Menu",
+        "label": "Mobile Menu Title"
+      }, {
+        "type": "link_list",
+        "id": "menu",
+        "default": "main-menu",
+        "label": "Heading Navigation Menu"
+      }
+    ]
+  }
+{% endschema %}
